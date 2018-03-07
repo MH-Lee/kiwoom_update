@@ -81,7 +81,7 @@ class Gobble(ProcessTracker):
             self.kosdaq_task = {}
             etf_in = open("./data/etf-dict.pickle", "rb")
             self.etf_task = pickle.load(etf_in)
-        elif market_type == 'kospi_total':
+        elif market_type == 'kospi-etf':
             kospi_in = open("./data/kospi-dict.pickle", "rb")
             self.kospi_task = pickle.load(kospi_in)
             self.kosdaq_task = {}
@@ -96,31 +96,40 @@ class Gobble(ProcessTracker):
 
 
     def _ohlcv_skip_codes(self):
-        os.chdir("./data/stock/kospi-ohlcv")
+        os.chdir("./data/stock-ohlcv/kospi-ohlcv")
         kospi_list = [json.split(".")[0] for json in os.listdir()]
         os.chdir("../../../")
-        os.chdir("./data/stock/kosdaq-ohlcv")
+        os.chdir("./data/stock-ohlcv/kosdaq-ohlcv")
         kosdaq_list = [json.split(".")[0] for json in os.listdir()]
         os.chdir("../../../")
-        return kospi_list + kosdaq_list
+        os.chdir("./data/stock-ohlcv/etf-ohlcv")
+        etf_list = [json.split(".")[0] for json in os.listdir()]
+        os.chdir("../../../")
+        return kospi_list + kosdaq_list + etf_list
 
     def _buysell_skip_codes(self):
-        os.chdir("./data/stock/kospi-buysell")
+        os.chdir("./data/stock-buy/kospi-buy")
         kospi_list = [json.split(".")[0] for json in os.listdir()]
         os.chdir("../../../")
-        os.chdir("./data/stock/kosdaq-buysell")
+        os.chdir("./data/stock-buy/kosdaq-buy")
         kosdaq_list = [json.split(".")[0] for json in os.listdir()]
         os.chdir("../../../")
-        return kospi_list + kosdaq_list
+        os.chdir("./data/stock-buy/etf-buy")
+        etf_list = [json.split(".")[0] for json in os.listdir()]
+        os.chdir("../../../")
+        return kospi_list + kosdaq_list + etf_list
 
     def _short_skip_codes(self):
-        os.chdir("./data/stock/kospi-short")
+        os.chdir("./data/stock-short/kospi-short")
         kospi_list = [json.split(".")[0] for json in os.listdir()]
         os.chdir("../../../")
-        os.chdir("./data/stock/kosdaq-short")
+        os.chdir("./data/stock-short/kosdaq-short")
         kosdaq_list = [json.split(".")[0] for json in os.listdir()]
         os.chdir("../../../")
-        return kospi_list + kosdaq_list
+        os.chdir("./data/stock-short/etf-short")
+        etf_list = [json.split(".")[0] for json in os.listdir()]
+        os.chdir("../../../")
+        return kospi_list + kosdaq_list + etf_list
 
     def req_ohlcv(self, start):
         done_list = self._ohlcv_skip_codes()
@@ -128,13 +137,16 @@ class Gobble(ProcessTracker):
         code_looped = 0
         total_time = 0
 
-        for market_type in [0, 10]:
+        for market_type in [0, 10, 2]:
             if market_type == 0:
                 market = "kospi"
                 task = self.kospi_task
             elif market_type == 10:
                 market = "kosdaq"
                 task = self.kosdaq_task
+            else:
+                market = "etf"
+                task = self.etf_task
 
             for code, name in task.items():
                 if code in done_list:
@@ -206,13 +218,16 @@ class Gobble(ProcessTracker):
         total_time = 0
 
         # get code list (0: KOSPI, 10: KOSDAQ)
-        for market_type in [0, 10]:
+        for market_type in [0, 10, 2]:
             if market_type == 0:
                 market = "kospi"
                 task = self.kospi_task
             elif market_type == 10:
                 market = "kosdaq"
                 task = self.kosdaq_task
+            else:
+                market = "etf"
+                task = self.etf_task
 
             for code, name in task.items():
                 if code in done_list:
@@ -286,13 +301,12 @@ class Gobble(ProcessTracker):
         cols  = ["date", "code", "name","close_price", "individual", "foreign_retail", "institution", "financial", "insurance", "trust",
                 "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign", "buysell"]
         kiwoom.data = kiwoom.data[cols]
-        path= ".\\data\\stock\\" + market + "-buysell\\"
-        file_name = code + ".csv"
-        kiwoom.data.to_csv(os.path.join(path,file_name), index=False, sep=',',encoding='utf-8')
         for bs in ['buy','sell']:
+            path= ".\\data\\stock\\{}-{}\\".format(market, bs)
+            file_name = code + ".csv"
             tmp = kiwoom.data[kiwoom.data['buysell'] == bs]
             del tmp['buysell']
-            tmp.to_csv('../kospi_' + bs + '/' + filename, index=False, sep=',',encoding='utf-8')
+            tmp.to_csv(os.path.join(path,file_name), index=False, sep=',',encoding='utf-8')
         print(code + ": " + name + " buysell data successfully saved")
 
 
@@ -302,13 +316,16 @@ class Gobble(ProcessTracker):
         code_looped = 0
         total_time = 0
 
-        for market_type in [0, 10]:
+        for market_type in [0, 10, 2]:
             if market_type == 0:
                 market = "kospi"
                 task = self.kospi_task
             elif market_type == 10:
                 market = "kosdaq"
                 task = self.kosdaq_task
+            else:
+                market = "etf"
+                task = self.etf_task
 
             for code, name in task.items():
                 if code in done_list:
@@ -374,8 +391,3 @@ class Gobble(ProcessTracker):
         file_name = code + ".csv"
         kiwoom.data.to_csv(os.path.join(path,file_name), index = False)
         print(code + ": " + name + " short data successfully saved")
-
-
-
-    def update_buysell(self):
-        pass
