@@ -352,7 +352,7 @@ class UpdateGobble(ProcessTracker):
         kiwoom.data = kiwoom.data[cols]
         path_buy= ".\\update_data\\stock-buy\\{}-buy\\".format(market)
         path_sell = ".\\update_data\\stock-sell\\{}-sell\\".format(market)
-        # path_net = ".\\update_data\\stock-net\\{}-net\\".format(market)
+        path_net = ".\\update_data\\stock-net\\{}-net\\".format(market)
         file_name = code + ".csv"
         tmp_buy = kiwoom.data[kiwoom.data['buysell'] == 'buy']
         tmp_sell = kiwoom.data[kiwoom.data['buysell'] == 'sell']
@@ -360,19 +360,21 @@ class UpdateGobble(ProcessTracker):
         tmp_sell = tmp_sell[tmp_sell['date']>=int(start)]
         del tmp_buy['buysell']
         del tmp_sell['buysell']
-        # cols2  = ["date", "code", "name", "close_price", "individual", "foreign_retail", "institution", "financial", "insurance", "trust",
-        #         "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign"]
-        # tmp_net = tmp_buy.loc[:,["individual", "foreign_retail", "institution", "financial", "insurance", "trust",
-        #             "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign"]] + tmp_sell.loc[:,["individual", "foreign_retail", "institution", "financial", "insurance", "trust",
-        #             "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign"]]
-        # tmp_net['date'] = tmp_buy['date']
-        # tmp_net['name'] = tmp_buy['name']
-        # tmp_net['code'] = tmp_buy['code']
-        # tmp_net['close_price'] = tmp_buy['close_price']
-        # tmp_net = tmp_net[cols2]
+        cols2  = ["date","code", "name", "close_price", "individual", "foreign_retail", "institution", "financial", "insurance", "trust",
+                "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign"]
+        add_col = ["date","individual", "foreign_retail", "institution", "financial", "insurance", "trust",
+                    "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign"]
+        add_buy = tmp_buy[add_col].set_index('date')
+        add_sell = tmp_sell[add_col].set_index('date')
+        tmp_net = add_buy.add(add_sell, fill_value=0)
+        tmp_net = tmp_net.reset_index()
+        tmp_net['name'] = tmp_buy['name']
+        tmp_net['code'] = tmp_buy['code']
+        tmp_net['close_price'] = tmp_buy['close_price']
+        tmp_net = tmp_net[cols2]
         tmp_buy.to_csv(os.path.join(path_buy ,file_name), index=False, sep=',')
         tmp_sell.to_csv(os.path.join(path_sell,file_name), index=False, sep=',')
-        # tmp_net.to_csv(os.path.join(path_net,file_name), index=False, sep=',')
+        tmp_net.to_csv(os.path.join(path_net,file_name), index=False, sep=',')
         print(code + ": " + name + " buysell data successfully saved")
 
     def req_short(self):
