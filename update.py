@@ -178,6 +178,7 @@ class UpdateGobble(ProcessTracker):
         done_list = self._ohlcv_skip_codes()
         total_stock_num = self._get_total_stock_num() - len(done_list)
         start = self.check_start_day_file('ohlcv')
+        # start = self.check_start_log()
         code_looped = 0
         total_time = 0
 
@@ -210,6 +211,7 @@ class UpdateGobble(ProcessTracker):
                 print(str(stocks_left) + " stocks left to save")
                 print(str(time_left) + " seconds left to finish whole request")
                 print("---------------------------------------------------")
+        self.add_data_log()
 
     def _initialize_ohlcv_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
@@ -259,6 +261,7 @@ class UpdateGobble(ProcessTracker):
         done_list = self._buysell_skip_codes()
         total_stock_num = self._get_total_stock_num() - len(done_list)
         start = self.check_start_day_file('buy')
+        # start = self.check_start_log()
         code_looped = 0
         total_time = 0
 
@@ -292,6 +295,7 @@ class UpdateGobble(ProcessTracker):
                 print(str(stocks_left) + " stocks left to save")
                 print(str(time_left) + " seconds left to finish whole request")
                 print("---------------------------------------------------")
+        self.add_data_log()
 
     def _initialize_buysell_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
@@ -375,6 +379,7 @@ class UpdateGobble(ProcessTracker):
         done_list = self._short_skip_codes()
         total_stock_num = self._get_total_stock_num() - len(done_list)
         start = self.check_start_day_file('short')
+        # start = self.check_start_log()
         code_looped = 0
         total_time = 0
 
@@ -407,6 +412,7 @@ class UpdateGobble(ProcessTracker):
                 print(str(stocks_left) + " stocks left to save")
                 print(str(time_left) + " seconds left to finish whole request")
                 print("---------------------------------------------------")
+        self.add_data_log()
 
     def _initialize_short_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
