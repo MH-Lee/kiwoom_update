@@ -13,7 +13,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from pathlib import Path
 
-TR_REQ_TIME_INTERVAL = 3.8
+TR_REQ_TIME_INTERVAL = 4
 
 class UpdateGobble(ProcessTracker):
     @timeit
