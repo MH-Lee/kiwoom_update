@@ -13,7 +13,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from pathlib import Path
 
-TR_REQ_TIME_INTERVAL = 4
+TR_REQ_TIME_INTERVAL = 4.5
 
 class UpdateGobble(ProcessTracker):
     @timeit
@@ -90,11 +90,22 @@ class UpdateGobble(ProcessTracker):
         etf_len = len(list(self.etf_task.keys()))
         return kospi_len + kosdaq_len + etf_len
 
-    def check_start_log(self):
-        f =  open('./daily-log/day-check.txt', 'r')
-        date = f.read()
-        date_list = date.split('\n')
-        f.close()
+    def check_start_log(self, datatype):
+        if datatype == 'buysell':
+            f =  open('./daily-log/buysell_daycheck.txt', 'r')
+            date = f.read()
+            date_list = date.split('\n')
+            f.close()
+        elif datatype == 'short':
+            f =  open('./daily-log/short_daycheck.txt', 'r')
+            date = f.read()
+            date_list = date.split('\n')
+            f.close()
+        else:
+            f =  open('./daily-log/ohlcv_daycheck.txt', 'r')
+            date = f.read()
+            date_list = date.split('\n')
+            f.close()
         week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
         self.last_date = datetime.strptime(date_list[-1], '%Y%m%d').date()
         w = self.last_date.weekday()
@@ -107,6 +118,7 @@ class UpdateGobble(ProcessTracker):
         else:
             self.start_date = self.last_date + timedelta(days=1)
             self.start_date = self.start_date.strftime('%Y%m%d')
+        return self.start_date
 
     def check_start_day_file(self, datatype):
         os.chdir('./data/stock-{}/kospi-{}'.format(datatype, datatype))
@@ -132,11 +144,22 @@ class UpdateGobble(ProcessTracker):
             self.start_date = self.start_date.strftime('%Y%m%d')
         return self.start_date
 
-    def add_data_log(self):
-        f = open('./daily-log/day-check.txt', 'a')
-        today = datetime.today().strftime('%Y%m%d')
-        f.write('\n' + today)
-        f.close()
+    def add_data_log(self, datatype):
+        if datatype == 'buysell':
+            f = open('./daily-log/buysell_daycheck.txt', 'a')
+            today = datetime.today().strftime('%Y%m%d')
+            f.write('\n' + today)
+            f.close()
+        elif datatype == 'short':
+            f = open('./daily-log/short_daycheck.txt', 'a')
+            today = datetime.today().strftime('%Y%m%d')
+            f.write('\n' + today)
+            f.close()
+        else:
+            f = open('./daily-log/ohlcv_daycheck.txt', 'a')
+            today = datetime.today().strftime('%Y%m%d')
+            f.write('\n' + today)
+            f.close()
 
     def _ohlcv_skip_codes(self):
         os.chdir("./update_data/stock-ohlcv/kospi-ohlcv")
@@ -177,8 +200,8 @@ class UpdateGobble(ProcessTracker):
     def req_ohlcv(self):
         done_list = self._ohlcv_skip_codes()
         total_stock_num = self._get_total_stock_num() - len(done_list)
-        start = self.check_start_day_file('ohlcv')
-        # start = self.check_start_log()
+        # start = self.check_start_day_file('ohlcv')
+        start = self.check_start_log()
         code_looped = 0
         total_time = 0
 
@@ -260,8 +283,8 @@ class UpdateGobble(ProcessTracker):
     def req_buysell(self):
         done_list = self._buysell_skip_codes()
         total_stock_num = self._get_total_stock_num() - len(done_list)
-        start = self.check_start_day_file('buy')
-        # start = self.check_start_log()
+        # start = self.check_start_day_file('buy')
+        start = self.check_start_log('buysell')
         code_looped = 0
         total_time = 0
 
@@ -295,7 +318,7 @@ class UpdateGobble(ProcessTracker):
                 print(str(stocks_left) + " stocks left to save")
                 print(str(time_left) + " seconds left to finish whole request")
                 print("---------------------------------------------------")
-        self.add_data_log()
+        self.add_data_log('buysell')
 
     def _initialize_buysell_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
@@ -380,8 +403,8 @@ class UpdateGobble(ProcessTracker):
     def req_short(self):
         done_list = self._short_skip_codes()
         total_stock_num = self._get_total_stock_num() - len(done_list)
-        start = self.check_start_day_file('short')
-        # start = self.check_start_log()
+        # start = self.check_start_day_file('short')
+        start = self.check_start_log('short')
         code_looped = 0
         total_time = 0
 
@@ -414,7 +437,7 @@ class UpdateGobble(ProcessTracker):
                 print(str(stocks_left) + " stocks left to save")
                 print(str(time_left) + " seconds left to finish whole request")
                 print("---------------------------------------------------")
-        self.add_data_log()
+        self.add_data_log('short')
 
     def _initialize_short_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
