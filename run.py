@@ -9,4 +9,4 @@ except FileExistsError:
     pass
 u.set_tasks()
 u.req_buysell()
-# u.req_short()
+u.req_short()

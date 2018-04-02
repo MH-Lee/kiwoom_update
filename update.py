@@ -14,8 +14,20 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 TR_REQ_TIME_INTERVAL = 4.8
-TODAY = datetime.today() - timedelta(days=3)
-TODAY=TODAY.strftime('%Y-%m-%d')
+
+week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+tmp_today = datetime.today()
+w = tmp_today.weekday()
+if week[w] == 'sat':
+    TODAY = tmp_today - timedelta(days=1)
+    TODAY = TODAY.strftime('%Y%m%d')
+elif week[w] == 'sun':
+    TODAY = tmp_today - timedelta(days=2)
+    TODAY = TODAY.strftime('%Y%m%d')
+else:
+    TODAY = tmp_today.strftime('%Y%m%d')
+print(TODAY)
+
 
 class UpdateGobble(ProcessTracker):
     @timeit
