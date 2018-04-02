@@ -1,10 +1,5 @@
 import os
 from kiwoom import Kiwoom
-# from dbwrapper import MongoDB
-# from pdreader import PDReader
-# from naverscraper import NaverScraper
-# from googlescraper import GoogleScraper
-# from sejongscraper import SejongScraper
 from processtracker import ProcessTracker, timeit
 
 from PyQt5.QtWidgets import *
@@ -166,7 +161,6 @@ class Gobble(ProcessTracker):
                 print(str(stocks_left) + " stocks left to save")
                 print(str(time_left) + " seconds left to finish whole request")
                 print("---------------------------------------------------")
-
 
     def _initialize_ohlcv_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL

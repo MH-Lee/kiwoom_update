@@ -1,7 +1,7 @@
 import os
 from kiwoom import Kiwoom
 from processtracker import ProcessTracker, timeit
-
+from datetime import datetime
 from PyQt5.QtWidgets import *
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
@@ -13,7 +13,9 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from pathlib import Path
 
-TR_REQ_TIME_INTERVAL = 4.5
+TR_REQ_TIME_INTERVAL = 4.8
+TODAY = datetime.today() - timedelta(days=3)
+TODAY=TODAY.strftime('%Y-%m-%d')
 
 class UpdateGobble(ProcessTracker):
     @timeit
@@ -89,6 +91,19 @@ class UpdateGobble(ProcessTracker):
         kosdaq_len = len(list(self.kosdaq_task.keys()))
         etf_len = len(list(self.etf_task.keys()))
         return kospi_len + kosdaq_len + etf_len
+
+    def make_folder(self):
+        global TODAY
+        for market in ['kospi','kosdaq','etf']:
+            os.mkdir('./update_data/stock-buy/{}-buy/{}'.format(market,TODAY))
+            print('{} {}-buy success'.format(TODAY, market))
+            os.mkdir('./update_data/stock-sell/{}-sell/{}'.format(market,TODAY))
+            print('{} {}-sell success'.format(TODAY, market))
+            os.mkdir('./update_data/stock-net/{}-net/{}'.format(market,TODAY))
+            print('{} {}-net success'.format(TODAY, market))
+            os.mkdir('./update_data/stock-short/{}-short/{}'.format(market,TODAY))
+            print('{} {}-short success'.format(TODAY, market))
+        print('mkdir process complete')
 
     def check_start_log(self, datatype):
         if datatype == 'buysell':
@@ -174,27 +189,27 @@ class UpdateGobble(ProcessTracker):
         return kospi_list + kosdaq_list + etf_list
 
     def _buysell_skip_codes(self):
-        os.chdir("./update_data/stock-net/kospi-net")
+        os.chdir("./update_data/stock-net/kospi-net/{}".format(TODAY))
         kospi_list = [json.split(".")[0] for json in os.listdir()]
-        os.chdir("../../../")
-        os.chdir("./update_data/stock-net/kosdaq-net")
+        os.chdir("../../../../")
+        os.chdir("./update_data/stock-net/kosdaq-net/{}".format(TODAY))
         kosdaq_list = [json.split(".")[0] for json in os.listdir()]
-        os.chdir("../../../")
-        os.chdir("./update_data/stock-net/etf-net")
+        os.chdir("../../../../")
+        os.chdir("./update_data/stock-net/etf-net/{}".format(TODAY))
         etf_list = [json.split(".")[0] for json in os.listdir()]
-        os.chdir("../../../")
+        os.chdir("../../../../")
         return kospi_list + kosdaq_list + etf_list
 
     def _short_skip_codes(self):
-        os.chdir("./update_data/stock-short/kospi-short")
+        os.chdir("./update_data/stock-short/kospi-short/{}".format(TODAY))
         kospi_list = [json.split(".")[0] for json in os.listdir()]
-        os.chdir("../../../")
-        os.chdir("./update_data/stock-short/kosdaq-short")
+        os.chdir("../../../../")
+        os.chdir("./update_data/stock-short/kosdaq-short/{}".format(TODAY))
         kosdaq_list = [json.split(".")[0] for json in os.listdir()]
-        os.chdir("../../../")
-        os.chdir("./update_data/stock-short/etf-short")
+        os.chdir("../../../../")
+        os.chdir("./update_data/stock-short/etf-short/{}".format(TODAY))
         etf_list = [json.split(".")[0] for json in os.listdir()]
-        os.chdir("../../../")
+        os.chdir("../../../../")
         return kospi_list + kosdaq_list + etf_list
 
     def req_ohlcv(self):
@@ -322,6 +337,7 @@ class UpdateGobble(ProcessTracker):
 
     def _initialize_buysell_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
+        global TODAY
 
         kiwoom = self.kiwoom
         name = kiwoom.get_master_code_name(code)
@@ -373,9 +389,9 @@ class UpdateGobble(ProcessTracker):
         cols  = ["date", "code", "name","close_price", "individual", "foreign_retail", "institution", "financial", "insurance", "trust",
                 "etc_finance", "bank", "pension", "private", "nation", "etc_corporate", "foreign", "buysell"]
         kiwoom.data = kiwoom.data[cols]
-        path_buy= ".\\update_data\\stock-buy\\{}-buy\\".format(market)
-        path_sell = ".\\update_data\\stock-sell\\{}-sell\\".format(market)
-        path_net = ".\\update_data\\stock-net\\{}-net\\".format(market)
+        path_buy= ".\\update_data\\stock-buy\\{}-buy\\{}\\".format(market, TODAY)
+        path_sell = ".\\update_data\\stock-sell\\{}-sell\\{}\\".format(market, TODAY)
+        path_net = ".\\update_data\\stock-net\\{}-net\\{}".format(market, TODAY)
         file_name = code + ".csv"
         tmp_buy = kiwoom.data[kiwoom.data['buysell'] == 'buy']
         tmp_sell = kiwoom.data[kiwoom.data['buysell'] == 'sell']
@@ -441,6 +457,7 @@ class UpdateGobble(ProcessTracker):
 
     def _initialize_short_data(self, code, market, start):
         global TR_REQ_TIME_INTERVAL
+        global TODAY
 
         kiwoom = self.kiwoom
         name = kiwoom.get_master_code_name(code)
@@ -480,7 +497,7 @@ class UpdateGobble(ProcessTracker):
         cols = ["date", "code", "name", "short", "short_proportion", "short_total_price", "short_average_price"]
         kiwoom.data = kiwoom.data[cols]
         update_short = kiwoom.data[kiwoom.data['date']>=int(start)]
-        path= ".\\update_data\\stock-short\\" + market + "-short\\"
+        path= ".\\update_data\\stock-short\\{}-short\\{}".format(market, TODAY)
         file_name = code + ".csv"
         update_short.to_csv(os.path.join(path,file_name), index = False)
         print(code + ": " + name + " short data successfully saved")
